@@ -12,7 +12,7 @@ $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
 switch ($uri) {
     case '/':
-        echo "Bienvenue sur la page d'accueil de la gestion de boutique!";
+        require_once('/var/www/html/gestionboutique/src/Views/dashboard/index.php');
         break;
 
     case '/users':
@@ -22,14 +22,11 @@ switch ($uri) {
 
     case '/debts':
         $controller = new DebtController();
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $controller->store();
-        } else {
-            $controller->index();
-        }
+        $controller->index();
+
         break;
 
-  /*   case '/products':
+        /*   case '/products':
         $controller = new ProductController();
         $controller->index();
         break;
@@ -44,4 +41,3 @@ switch ($uri) {
         echo "Page not found";
         break;
 }
-?>
