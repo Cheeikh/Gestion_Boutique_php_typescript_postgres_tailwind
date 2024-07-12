@@ -54,4 +54,18 @@ abstract class Entity {
     public function __isset($property) {
         return $this->reflector->hasProperty($property);
     }
+
+    public function __serialize(): array
+    {
+        return $this->toArray();
+    }
+
+    public function __unserialize(array $data): void
+    {
+        $properties = $this->reflector->getProperties();
+        foreach ($properties as $property) {
+            $property->setAccessible(true);
+            $property->setValue($this, $data[$property->getName()]);
+        }
+    }
 }

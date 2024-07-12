@@ -18,9 +18,11 @@ class ComposerStaticInit1c36258666dae533b481af31186877d4
             'Symfony\\Polyfill\\Php80\\' => 23,
             'Symfony\\Polyfill\\Mbstring\\' => 26,
             'Symfony\\Polyfill\\Ctype\\' => 23,
+            'Symfony\\Component\\Yaml\\' => 23,
         ),
         'P' => 
         array (
+            'Psr\\Container\\' => 14,
             'PhpOption\\' => 10,
         ),
         'G' => 
@@ -50,6 +52,14 @@ class ComposerStaticInit1c36258666dae533b481af31186877d4
         array (
             0 => __DIR__ . '/..' . '/symfony/polyfill-ctype',
         ),
+        'Symfony\\Component\\Yaml\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/yaml',
+        ),
+        'Psr\\Container\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/psr/container/src',
+        ),
         'PhpOption\\' => 
         array (
             0 => __DIR__ . '/..' . '/phpoption/phpoption/src/PhpOption',
@@ -68,6 +78,16 @@ class ComposerStaticInit1c36258666dae533b481af31186877d4
         ),
     );
 
+    public static $prefixesPsr0 = array (
+        'P' => 
+        array (
+            'Pimple' => 
+            array (
+                0 => __DIR__ . '/..' . '/pimple/pimple/src',
+            ),
+        ),
+    );
+
     public static $classMap = array (
         'Attribute' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/Attribute.php',
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
@@ -82,6 +102,7 @@ class ComposerStaticInit1c36258666dae533b481af31186877d4
         return \Closure::bind(function () use ($loader) {
             $loader->prefixLengthsPsr4 = ComposerStaticInit1c36258666dae533b481af31186877d4::$prefixLengthsPsr4;
             $loader->prefixDirsPsr4 = ComposerStaticInit1c36258666dae533b481af31186877d4::$prefixDirsPsr4;
+            $loader->prefixesPsr0 = ComposerStaticInit1c36258666dae533b481af31186877d4::$prefixesPsr0;
             $loader->classMap = ComposerStaticInit1c36258666dae533b481af31186877d4::$classMap;
 
         }, null, ClassLoader::class);

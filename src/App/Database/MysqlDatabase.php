@@ -6,43 +6,41 @@ namespace App\Database;
 use PDO;
 use PDOException;
 
-class MysqlDatabase {
+class MysqlDatabase implements DatabaseInterface {
     private $pdo;
 
     public function __construct(PDO $pdo) {
         $this->pdo = $pdo;
     }
 
-    public function getPDO() {
+    public function getPDO(): PDO {
         return $this->pdo;
     }
 
-    public function query($sql, $params = []) {
+    public function query(string $sql, array $params = []): array {
         try {
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute($params);
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
-            // Log or handle the exception as needed
             throw new PDOException('Query failed: ' . $e->getMessage());
         }
     }
 
-    public function execute($sql, $params = []) {
+    public function execute(string $sql, array $params = []): bool {
         try {
             $stmt = $this->pdo->prepare($sql);
             return $stmt->execute($params);
         } catch (PDOException $e) {
-            // Log or handle the exception as needed
             throw new PDOException('Execution failed: ' . $e->getMessage());
         }
     }
 
-    public function prepare($sql) {
+    public function prepare(string $sql) {
         return $this->pdo->prepare($sql);
     }
 
-    public function lastInsertId() {
+    public function lastInsertId(): string {
         return $this->pdo->lastInsertId();
     }
 }

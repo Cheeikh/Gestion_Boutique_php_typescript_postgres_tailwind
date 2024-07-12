@@ -4,8 +4,20 @@ namespace App\Controller;
 
 use App\Model\ClientModel;
 use App\Model\UtilisateurModel;
+use App\Authorize\Authorize;
+use App\Files\FileHandler;
 
 class ClientController extends Controller {
+    private $clientModel;
+    private $utilisateurModel;
+
+    public function __construct(Authorize $authorize, FileHandler $fileHandler, ClientModel $clientModel, UtilisateurModel $utilisateurModel, $isApi = false) {
+        parent::__construct($authorize, $fileHandler, $isApi);
+        $this->clientModel = $clientModel;
+        $this->utilisateurModel = $utilisateurModel;
+    }
+    
+
     public function index() {
         $this->render('Client/clients');
     }
@@ -36,20 +48,14 @@ class ClientController extends Controller {
             $errors = $this->validate($_POST, $validationRules);
 
             // Vérification d'unicité des données
-            $utilisateurModel = new UtilisateurModel($this->app->getDatabase());
-            
-          
-
-            // Vérifier l'unicité de l'email
-            $existingUser = $utilisateurModel->findBy('email', $_POST['email']);
+            $existingUser = $this->utilisateurModel->findBy('email', $_POST['email']);
             if ($existingUser) {
-                $errors['email'] = 'Cet e-mail existe déjà.';
+                $errors['email'] = 'Fall e-mail bi amna ba paré.';
             }
 
-            // Vérifier l'unicité du téléphone
-            $existingUser = $utilisateurModel->findBy('telephone', $_POST['telephone']);
+            $existingUser = $this->utilisateurModel->findBy('telephone', $_POST['telephone']);
             if ($existingUser) {
-                $errors['telephone'] = 'Ce numéro de téléphone existe déjà.';
+                $errors['telephone'] = 'Looy dougeulaatéé numéro bi nii ?';
             }
 
             // Si des erreurs sont présentes, afficher le formulaire avec les erreurs
@@ -64,33 +70,14 @@ class ClientController extends Controller {
             $email = $_POST['email'];
             $telephone = $_POST['telephone'];
 
-            if (isset($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) {
-                $fileTmpPath = $_FILES['photo']['tmp_name'];
-                $fileName = $_FILES['photo']['name'];
-             
-                // Créer le dossier de téléchargement s'il n'existe pas
-                $uploadFileDir = '/var/www/html/gestionboutique/public/upload/';
-            
-                
-                // Gérer les caractères spéciaux dans le nom du fichier
-                $fileName = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $fileName);
-                
-                // Définir le chemin de destination
-                $dest_path = $uploadFileDir . $fileName;
-            
-            
-                if (move_uploaded_file($fileTmpPath, $dest_path)) {
-                    $photo = $fileName; // Enregistrer uniquement le nom du fichier
-                } else {
-                    // Gérer l'erreur
-                    $photo = 'naruto.jpg'; // Photo par défaut si le téléchargement échoue
-                }
-            } else {
-                $photo = 'naruto.jpg'; // Photo par défaut si aucun fichier n'est téléchargé
+            // Utilisation de la méthode de téléchargement de fichier factorisée
+            $photo = 'naruto.jpg'; // Photo par défaut
+            if (isset($_FILES['photo'])) {
+                $photo = $this->uploadFile($_FILES['photo'], '/var/www/html/gestionboutique/public/upload/');
             }
 
             // Créer un nouvel utilisateur
-            $utilisateurId = $utilisateurModel->create([
+            $utilisateurId = $this->utilisateurModel->create([
                 'nom' => $nom,
                 'prenom' => $prenom,
                 'email' => $email,
@@ -101,28 +88,26 @@ class ClientController extends Controller {
             ]);
 
             // Créer un nouveau client associé à cet utilisateur
-            $clientModel = new ClientModel($this->app->getDatabase());
-            $clientModel->create([
+            $this->clientModel->create([
                 'utilisateur_id' => $utilisateurId
             ]);
 
             // Redirection vers la liste des clients après la création
-            header('Location: /clients');
-            exit();
+            $this->redirect('/clients');
+        } else {
+            $this->redirect('/clients');
         }
     }
 
     public function show() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['searchNumber'])) {
-            $clientModel = new ClientModel($this->app->getDatabase());
-            $client = $clientModel->findClientByPhoneNumber($_POST['searchNumber']);
-            $id_client = $client[0]['id'];
-            $dettes = $clientModel->findClientDette($id_client);
-
+            $client = $this->clientModel->findClientByPhoneNumber($_POST['searchNumber']);
             if ($client) {
+                $id_client = $client[0]['id'];
+                $dettes = $this->clientModel->findClientDette($id_client);
                 $this->render('Client/clients', ['client' => $client[0], 'dettes' => $dettes]);
             } else {
-                $this->render('Client/clients', ['error' => 'Client not found']);
+                $this->redirect('/clients');
             }
         }
     }

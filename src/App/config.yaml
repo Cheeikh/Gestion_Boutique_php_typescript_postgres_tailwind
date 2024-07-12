@@ -1,0 +1,55 @@
+services:
+  App\Database\PDOConnection:
+    class: PDO
+    arguments:
+      - 'mysql:host=localhost;dbname=gestionboutique'
+      - 'testuser'
+      - 'Csmuzumaki123!!'
+
+  App\Database\MysqlDatabase:
+    class: App\Database\MysqlDatabase
+    arguments:
+      - '@App\Database\PDOConnection'
+
+  App\Database\Database:
+    factory: '@App\Database\MysqlDatabase'  # Utiliser MysqlDatabase comme service 'database'
+
+  App\Authorize\Authorize:
+    class: App\Authorize\Authorize
+    arguments: []
+
+  App\Files\FileHandler:
+    class: App\Files\FileHandler
+    arguments: []
+
+  App\Model\ClientModel:
+    class: App\Model\ClientModel
+    arguments:
+      - '@App\Database\MysqlDatabase'
+
+  App\Model\UtilisateurModel:
+    class: App\Model\UtilisateurModel
+    arguments:
+      - '@App\Database\MysqlDatabase'
+
+  App\Controller\ClientController:
+    class: App\Controller\ClientController
+    arguments:
+      - '@App\Authorize\Authorize'
+      - '@App\Files\FileHandler'
+      - '@App\Model\ClientModel'
+      - '@App\Model\UtilisateurModel'
+
+  App\Routes\WebRoutes:
+    class: App\Routes\WebRoutes  # Définition des routes web
+
+  App\Routes\ApiRoutes:
+    class: App\Routes\ApiRoutes  # Définition des routes API
+
+  router:  # Définir le service router
+    class: App\Core\Router
+    arguments:
+      - '@App\Routes\WebRoutes'
+      - '@App\Routes\ApiRoutes'
+      - '@App\Authorize\Authorize'
+      - '@App\Files\FileHandler'
