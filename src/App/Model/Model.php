@@ -1,5 +1,6 @@
 <?php
 // src/App/Model/Model.php
+
 namespace App\Model;
 
 use App\Database\MysqlDatabase;
@@ -14,65 +15,65 @@ abstract class Model {
     }
 
     public function all() {
-        return $this->query('SELECT * FROM ' . $this->table);
+        return $this->query('SELECT * FROM ' . $this->table, [], get_called_class());
     }
 
     public function find($id) {
-        return $this->query('SELECT * FROM ' . $this->table . ' WHERE id = ?', [$id]);
+        $result = $this->query('SELECT * FROM ' . $this->table . ' WHERE id = ?', [$id], get_called_class());
+        return $result ? $result[0] : null;
     }
 
-    protected function query($sql, $params = []) {
-        $stmt = $this->database->getPDO()->prepare($sql);
-        $stmt->execute($params);
-        
-        // Si la requête est un INSERT, retourne l'ID du dernier enregistrement inséré
-        if (preg_match('/^INSERT/i', $sql)) {
-            return $this->database->getPDO()->lastInsertId();
-        }
-
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    protected function query($sql, $params = [], $entityClass = null) {
+        return $this->database->query($sql, $params, $entityClass);
     }
 
     public function save(array $data) {
-        $columns = implode(', ', array_keys($data));
-        $placeholders = implode(', ', array_fill(0, count($data), '?'));
-        $sql = "INSERT INTO {$this->table} ({$columns}) VALUES ({$placeholders})";
-        $this->query($sql, array_values($data));
-    }
+            $columns = implode(', ', array_keys($data));
+            $placeholders = implode(', ', array_fill(0, count($data), '?'));
+            $sql = "INSERT INTO {$this->table} ({$columns}) VALUES ({$placeholders})";
+            $this->database->execute($sql, array_values($data));
+            return $this->database->lastInsertId();
+        }
 
     public function update($id, array $data) {
         $columns = implode(' = ?, ', array_keys($data)) . ' = ?';
         $sql = "UPDATE {$this->table} SET {$columns} WHERE id = ?";
         $params = array_values($data);
         $params[] = $id;
-        $this->query($sql, $params);
+        return $this->database->execute($sql, $params);
     }
 
     public function delete($id) {
         $sql = "DELETE FROM {$this->table} WHERE id = ?";
-        $this->query($sql, [$id]);
+        return $this->database->execute($sql, [$id]);
     }
 
-    public function hasMany($model, $foreign_key) {
-        $sql = "SELECT * FROM {$model->getTable()} WHERE {$foreign_key} = ?";
-        return $this->query($sql, [$this->id]);
+    public function hasMany($modelClass, $foreignKey, $entity) {
+        $model = new $modelClass($this->database);
+        $sql = "SELECT * FROM {$model->getTable()} WHERE {$foreignKey} = ?";
+        return $this->query($sql, [$entity->id], $modelClass);
     }
 
-    public function belongsTo($model, $foreign_key) {
+    public function belongsTo($modelClass, $foreignKey, $entity) {
+        $model = new $modelClass($this->database);
         $sql = "SELECT * FROM {$model->getTable()} WHERE id = ?";
-        return $this->query($sql, [$this->{$foreign_key}]);
+        $result = $this->query($sql, [$entity->{$foreignKey}], $modelClass);
+        return $result ? $result[0] : null;
     }
 
-    public function belongsToMany($model, $pivot, $foreign_key, $other_key) {
+    public function belongsToMany($modelClass, $pivotTable, $foreignKey, $otherKey, $entity) {
+        $model = new $modelClass($this->database);
         $sql = "SELECT * FROM {$model->getTable()} 
-                JOIN {$pivot} ON {$pivot}.{$other_key} = {$model->getTable()}.id 
-                WHERE {$pivot}.{$foreign_key} = ?";
-        return $this->query($sql, [$this->id]);
+                JOIN {$pivotTable} ON {$pivotTable}.{$otherKey} = {$model->getTable()}.id 
+                WHERE {$pivotTable}.{$foreignKey} = ?";
+        return $this->query($sql, [$entity->id], $modelClass);
     }
 
-    public function hasOne($model, $foreign_key) {
-        $sql = "SELECT * FROM {$model->getTable()} WHERE {$foreign_key} = ?";
-        return $this->query($sql, [$this->id]);
+    public function hasOne($modelClass, $foreignKey, $entity) {
+        $model = new $modelClass($this->database);
+        $sql = "SELECT * FROM {$model->getTable()} WHERE {$foreignKey} = ?";
+        $result = $this->query($sql, [$entity->id], $modelClass);
+        return $result ? $result[0] : null;
     }
 
     public function transaction(callable $callback) {

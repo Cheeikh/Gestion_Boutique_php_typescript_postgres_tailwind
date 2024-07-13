@@ -14,5 +14,8 @@ return [
     ['GET', '/dettes/add/#id/#date/#dat1', [ExoController::class, 'store']],
     ['GET', '/clients', function () {
         view('Client/clients');
+    }],
+    ['GET', '/clients/detail', function () {
+        view('Client/detail');
     }]
 ];

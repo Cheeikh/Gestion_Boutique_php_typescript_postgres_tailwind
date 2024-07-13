@@ -3,12 +3,13 @@
 
 namespace App\Model;
 
+use App\Entity\ClientEntity;
+
 class ClientModel extends Model {
     protected $table = 'clients';
 
     public function create(array $data) {
-        $sql = "INSERT INTO {$this->table} (utilisateur_id) VALUES (:utilisateur_id)";
-        return $this->query($sql, $data);
+        return $this->save($data);
     }
 
     public function findClientByPhoneNumber($phone) {
@@ -16,7 +17,7 @@ class ClientModel extends Model {
                 FROM {$this->table} c 
                 JOIN utilisateurs u ON c.utilisateur_id = u.id 
                 WHERE u.telephone = ? AND u.role_id = 3";
-        return $this->query($sql, [$phone]);
+        return $this->query($sql, [$phone], ClientEntity::class);
     }
 
     public function findClientDette($id) {

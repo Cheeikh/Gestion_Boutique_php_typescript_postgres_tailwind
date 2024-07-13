@@ -1,5 +1,6 @@
 <?php
 // src/App/Entity/ClientEntity.php
+
 namespace App\Entity;
 
 class ClientEntity extends Entity {
@@ -8,7 +9,6 @@ class ClientEntity extends Entity {
     protected $nom;
     protected $prenom;
     protected $email;
-    protected $password;
     protected $telephone;
     protected $photo;
     protected $created_at;

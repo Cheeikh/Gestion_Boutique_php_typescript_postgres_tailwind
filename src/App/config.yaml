@@ -32,6 +32,11 @@ services:
     arguments:
       - '@App\Database\MysqlDatabase'
 
+  App\Model\DebtModel:
+    class: App\Model\DebtModel
+    arguments:
+      - '@App\Database\MysqlDatabase'
+
   App\Controller\ClientController:
     class: App\Controller\ClientController
     arguments:
@@ -39,6 +44,7 @@ services:
       - '@App\Files\FileHandler'
       - '@App\Model\ClientModel'
       - '@App\Model\UtilisateurModel'
+      - '@App\Model\DebtModel'
 
   App\Routes\WebRoutes:
     class: App\Routes\WebRoutes  # Définition des routes web

@@ -45,6 +45,13 @@ $container['apiRoutes'] = function() {
 // Assurez-vous que les services Authorize et FileHandler sont définis
 $container['authorize'] = function() {
     return new App\Authorize\Authorize(); // Instanciation du service Authorize
+};// Assurez-vous que les services Authorize et FileHandler sont définis
+$container['authorize'] = function() {
+    return new App\Authorize\Authorize(); // Instanciation du service Authorize
+};
+
+$container['fileHandler'] = function() {
+    return new App\Files\FileHandler(); // Instanciation du service FileHandler
 };
 
 $container['fileHandler'] = function() {

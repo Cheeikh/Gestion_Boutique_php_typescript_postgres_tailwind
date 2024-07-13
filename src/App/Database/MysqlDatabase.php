@@ -17,10 +17,14 @@ class MysqlDatabase implements DatabaseInterface {
         return $this->pdo;
     }
 
-    public function query(string $sql, array $params = []): array {
+    public function query(string $sql, array $params = [], string $entityClass = null): array {
         try {
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute($params);
+            if ($entityClass) {
+                $stmt->setFetchMode(PDO::FETCH_CLASS, $entityClass);
+                return $stmt->fetchAll();
+            }
             return $stmt->fetchAll(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
             throw new PDOException('Query failed: ' . $e->getMessage());

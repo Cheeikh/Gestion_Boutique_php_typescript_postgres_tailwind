@@ -1,22 +1,25 @@
 <?php
+// src/App/Controller/ClientController.php
 
 namespace App\Controller;
 
 use App\Model\ClientModel;
 use App\Model\UtilisateurModel;
+use App\Model\DebtModel;
 use App\Authorize\Authorize;
 use App\Files\FileHandler;
 
 class ClientController extends Controller {
     private $clientModel;
     private $utilisateurModel;
+    private $debtModel;
 
-    public function __construct(Authorize $authorize, FileHandler $fileHandler, ClientModel $clientModel, UtilisateurModel $utilisateurModel, $isApi = false) {
+    public function __construct(Authorize $authorize, FileHandler $fileHandler, ClientModel $clientModel, UtilisateurModel $utilisateurModel, DebtModel $debtModel, $isApi = false) {
         parent::__construct($authorize, $fileHandler, $isApi);
         $this->clientModel = $clientModel;
         $this->utilisateurModel = $utilisateurModel;
+        $this->debtModel = $debtModel;
     }
-    
 
     public function index() {
         $this->render('Client/clients');
@@ -101,14 +104,25 @@ class ClientController extends Controller {
 
     public function show() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['searchNumber'])) {
-            $client = $this->clientModel->findClientByPhoneNumber($_POST['searchNumber']);
-            if ($client) {
-                $id_client = $client[0]['id'];
-                $dettes = $this->clientModel->findClientDette($id_client);
-                $this->render('Client/clients', ['client' => $client[0], 'dettes' => $dettes]);
+            $clients = $this->clientModel->findClientByPhoneNumber($_POST['searchNumber']);
+            if (!empty($clients)) {
+                $client = $clients[0];  // Nous supposons qu'il y a un seul résultat
+                $id_client = $client->id;
+                $dettesData = $this->debtModel->findClientDette($id_client);
+                $dettes = $dettesData['dettes'];  // Récupération des objets DebtEntity
+                $totalMontantImpaye = $dettesData['total_dette_impaye'];  // Total des montants impayés
+                $totalMontantVerse = $dettesData['total_montant_verse'];  // Total des montants versés
+    
+                $this->render('Client/clients', [
+                    'client' => $client, 
+                    'dettes' => $dettes,
+                    'totalMontantImpaye' => $totalMontantImpaye,
+                    'totalMontantVerse' => $totalMontantVerse
+                ]);
             } else {
                 $this->redirect('/clients');
             }
         }
     }
+    
 }
