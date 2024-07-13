@@ -1,23 +1,27 @@
 <?php
+// src/App/Controller/Controller.php
 
 namespace App\Controller;
 
 use App\Authorize\Authorize;
 use App\Files\FileHandler;
+use App\Session\Session;
 
 abstract class Controller implements ControllerInterface {
     protected $authorize;
     protected $fileHandler;
+    protected $session;
     protected $isApi = false;
 
     use ViewTrait;
     use ValidationTrait;
     use RedirectTrait;
 
-    public function __construct(Authorize $authorize, FileHandler $fileHandler, $isApi = false) {
+    public function __construct(Authorize $authorize, FileHandler $fileHandler, Session $session, $isApi = false) {
         $this->isApi = $isApi;
         $this->authorize = $authorize;
         $this->fileHandler = $fileHandler;
+        $this->session = $session;
     }
 
     // Ajout des nouvelles méthodes de gestion des fichiers et de l'utilisateur
@@ -39,5 +43,17 @@ abstract class Controller implements ControllerInterface {
 
     protected function hasRole(string $role): bool {
         return $this->authorize->hasRole($role);
+    }
+
+    protected function setSessionValue(string $key, $value): void {
+        $this->session::set($key, $value);
+    }
+
+    protected function getSessionValue(string $key) {
+        return $this->session::get($key);
+    }
+
+    protected function issetSessionValue(string $key): bool {
+        return $this->session::isset($key);
     }
 }

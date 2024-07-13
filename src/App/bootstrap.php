@@ -22,7 +22,7 @@ foreach ($config['services'] as $id => $service) {
         // Résoudre les arguments
         $resolvedArgs = [];
         foreach ($args as $arg) {
-            if (strpos($arg, '@') === 0) {
+            if (is_string($arg) && strpos($arg, '@') === 0) {
                 $resolvedArgs[] = $c[substr($arg, 1)];
             } else {
                 $resolvedArgs[] = $arg; // Passer les valeurs non identifiées
@@ -43,28 +43,26 @@ $container['apiRoutes'] = function() {
 };
 
 // Assurez-vous que les services Authorize et FileHandler sont définis
-$container['authorize'] = function() {
-    return new App\Authorize\Authorize(); // Instanciation du service Authorize
-};// Assurez-vous que les services Authorize et FileHandler sont définis
-$container['authorize'] = function() {
+$container['App\Authorize\Authorize'] = function() {
     return new App\Authorize\Authorize(); // Instanciation du service Authorize
 };
 
-$container['fileHandler'] = function() {
+$container['App\Files\FileHandler'] = function() {
     return new App\Files\FileHandler(); // Instanciation du service FileHandler
 };
 
-$container['fileHandler'] = function() {
-    return new App\Files\FileHandler(); // Instanciation du service FileHandler
+$container['App\Session\Session'] = function() {
+    return new App\Session\Session(); // Instanciation du service Session
 };
 
 // Définir le service router
 $container['router'] = function($c) {
     return new App\Core\Router(
-        $c['webRoutes'],  // Passer l'array de routes
-        $c['apiRoutes'],  // Passer l'array de routes API
-        $c['authorize'],   // Passer le service Authorize
-        $c['fileHandler'], // Passer le service FileHandler
+        $c['webRoutes'],
+        $c['apiRoutes'],
+        $c['App\Authorize\Authorize'],
+        $c['App\Files\FileHandler'],
+        $c['App\Session\Session'],
         $c // Passer le conteneur pour les services
     );
 };

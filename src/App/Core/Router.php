@@ -9,16 +9,20 @@ use ReflectionException;
 use App\Authorize\Authorize;
 use App\Files\FileHandler;
 use Pimple\Container;
+use App\Session\Session;
+
 
 class Router {
     private $routes = [];
     private $apiPrefix = '/api';
     private $container;
+    private $session;
 
-    public function __construct(array $webRoutes, array $apiRoutes, Authorize $authorize, FileHandler $fileHandler, Container $container) {
+    public function __construct(array $webRoutes, array $apiRoutes, Authorize $authorize, FileHandler $fileHandler, Session $session, Container $container) {
         $this->container = $container;
-
+        $this->session = $container['App\Session\Session'];
         $this->loadServices();
+        
 
         foreach ($webRoutes as $route) {
             $this->addRoute($route[0], $route[1], $route[2], false);
@@ -31,8 +35,12 @@ class Router {
     
     private function loadServices() {
         $config = Yaml::parseFile('/var/www/html/gestionboutique/src/App/config.yaml');
-    
+        
         foreach ($config['services'] as $service => $details) {
+            if (!isset($details['class'])) {
+                error_log("Service $service is missing 'class' key.");
+                continue;  // Ignorer ce service
+            }
             $class = $details['class'];
             $arguments = $details['arguments'] ?? [];
             $resolvedArguments = [];
@@ -45,13 +53,13 @@ class Router {
                 }
             }
     
-            // Only set the service if it hasn't been defined yet
             if (!isset($this->container[$service])) {
                 $reflectionClass = new ReflectionClass($class);
                 $this->container[$service] = $reflectionClass->newInstanceArgs($resolvedArguments);
             }
         }
     }
+    
     
 
     private function getService($service) {
@@ -92,7 +100,11 @@ class Router {
     public function dispatch() {
         $request = $this->parseRequest();
         $routeInfo = $this->findRoute($request);
-        $errorController = new ErrorController($this->getService('authorize'), $this->getService('fileHandler'));
+        $errorController = new ErrorController(
+            $this->container['App\Authorize\Authorize'],
+            $this->container['App\Files\FileHandler'],
+            $this->container['App\Session\Session']
+        );
 
         if (!$routeInfo) {
             $errorController->notFound();

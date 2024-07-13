@@ -3,7 +3,7 @@
 
 namespace App\Validator;
 
-class Validation {
+trait Validation {
     function validate(array $data, array $rules): array {
        $errors = [];
 

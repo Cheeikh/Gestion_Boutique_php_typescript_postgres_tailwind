@@ -37,6 +37,24 @@ services:
     arguments:
       - '@App\Database\MysqlDatabase'
 
+  App\Routes\WebRoutes:
+    class: App\Routes\WebRoutes  # Définition des routes web
+
+  App\Routes\ApiRoutes:
+    class: App\Routes\ApiRoutes  # Définition des routes API
+
+  App\Session\Session:
+    class: App\Session\Session
+    arguments: []
+
+  App\Controller\Controller:
+    class: App\Controller\Controller
+    arguments:
+      - '@App\Authorize\Authorize'
+      - '@App\Files\FileHandler'
+      - '@App\Session\Session'
+      - false
+
   App\Controller\ClientController:
     class: App\Controller\ClientController
     arguments:
@@ -45,17 +63,13 @@ services:
       - '@App\Model\ClientModel'
       - '@App\Model\UtilisateurModel'
       - '@App\Model\DebtModel'
+      - '@App\Session\Session'  
 
-  App\Routes\WebRoutes:
-    class: App\Routes\WebRoutes  # Définition des routes web
-
-  App\Routes\ApiRoutes:
-    class: App\Routes\ApiRoutes  # Définition des routes API
-
-  router:  # Définir le service router
+  router:
     class: App\Core\Router
     arguments:
       - '@App\Routes\WebRoutes'
       - '@App\Routes\ApiRoutes'
       - '@App\Authorize\Authorize'
       - '@App\Files\FileHandler'
+      - '@service_container'  # Assurez-vous que ce service est chargé correctement

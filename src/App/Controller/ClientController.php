@@ -8,21 +8,35 @@ use App\Model\UtilisateurModel;
 use App\Model\DebtModel;
 use App\Authorize\Authorize;
 use App\Files\FileHandler;
+use App\Session\Session;
 
 class ClientController extends Controller {
     private $clientModel;
     private $utilisateurModel;
     private $debtModel;
 
-    public function __construct(Authorize $authorize, FileHandler $fileHandler, ClientModel $clientModel, UtilisateurModel $utilisateurModel, DebtModel $debtModel, $isApi = false) {
-        parent::__construct($authorize, $fileHandler, $isApi);
+    public function __construct(Authorize $authorize, FileHandler $fileHandler, ClientModel $clientModel, UtilisateurModel $utilisateurModel, DebtModel $debtModel, Session $session, $isApi = false) {
+        parent::__construct($authorize, $fileHandler, $session, $isApi);
         $this->clientModel = $clientModel;
         $this->utilisateurModel = $utilisateurModel;
         $this->debtModel = $debtModel;
     }
 
     public function index() {
-        $this->render('Client/clients');
+        $errors = $this->session::get('errors');
+        $this->session::set('errors', null);
+        
+        $client = $this->session::get('client');
+        $this->session::set('client', null);
+        
+        $dettes = $this->session::get('dettes');
+        $this->session::set('dettes', null);
+        
+        $this->render('Client/clients', [
+            'errors' => $errors,
+            'client' => $client,
+            'dettes' => $dettes
+        ]);
     }
 
     public function create() {
@@ -61,9 +75,10 @@ class ClientController extends Controller {
                 $errors['telephone'] = 'Looy dougeulaatéé numéro bi nii ?';
             }
 
-            // Si des erreurs sont présentes, afficher le formulaire avec les erreurs
+            // Si des erreurs sont présentes, les stocker dans la session et rediriger
             if (!empty($errors)) {
-                $this->render('Client/clients', ['errors' => $errors]);
+                $this->session::set('errors', $errors);
+                $this->redirect('/clients');
                 return;
             }
 
@@ -95,6 +110,9 @@ class ClientController extends Controller {
                 'utilisateur_id' => $utilisateurId
             ]);
 
+            // Stocker un message de succès dans la session
+            $this->session::set('success_message', 'Le client a été créé avec succès.');
+
             // Redirection vers la liste des clients après la création
             $this->redirect('/clients');
         } else {
@@ -109,20 +127,43 @@ class ClientController extends Controller {
                 $client = $clients[0];  // Nous supposons qu'il y a un seul résultat
                 $id_client = $client->id;
                 $dettesData = $this->debtModel->findClientDette($id_client);
-                $dettes = $dettesData['dettes'];  // Récupération des objets DebtEntity
-                $totalMontantImpaye = $dettesData['total_dette_impaye'];  // Total des montants impayés
-                $totalMontantVerse = $dettesData['total_montant_verse'];  // Total des montants versés
-    
-                $this->render('Client/clients', [
-                    'client' => $client, 
-                    'dettes' => $dettes,
-                    'totalMontantImpaye' => $totalMontantImpaye,
-                    'totalMontantVerse' => $totalMontantVerse
-                ]);
+                
+                $this->storeClientDataInSession($client, $dettesData);
             } else {
-                $this->redirect('/clients');
+                $this->session::set('error_message', 'Aucun client trouvé avec ce numéro de téléphone.');
             }
         }
+        
+        $this->displayClientData();
+    }
+    
+    private function storeClientDataInSession($client, $dettesData) {
+        $this->session::set('client', $client);
+        $this->session::set('dettes', [
+            'dettes' => $dettesData['dettes'],
+            'totalMontantImpaye' => $dettesData['total_dette_impaye'],
+            'totalMontantVerse' => $dettesData['total_montant_verse']
+        ]);
+    }
+    
+    private function displayClientData() {
+        $client = $this->session::get('client');
+        $dettes = $this->session::get('dettes');
+        
+        if ($client && $dettes) {
+            $this->render('Client/clients', [
+                'client' => $client,
+                'dettes' => $dettes['dettes'],
+                'totalMontantImpaye' => $dettes['totalMontantImpaye'],
+                'totalMontantVerse' => $dettes['totalMontantVerse']
+            ]);
+        } else {
+            $this->render('Client/clients');
+        }
+        
+        // Clear the session data after rendering
+        $this->session::set('client', null);
+        $this->session::set('dettes', null);
     }
     
 }
