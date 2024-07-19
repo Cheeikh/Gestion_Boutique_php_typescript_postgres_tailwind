@@ -59,7 +59,7 @@
             <input type="tel" id="tel" name="searchNumber" class="block w-full rounded-l-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50" value="<?= isset($client->telephone) ? $client->telephone : '' ?>">
             <button class="bg-blue-600 text-white px-4 rounded-r-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" type="submit">OK</button>
           </form>
-        </div>
+        </div>0603040506
       </div>
 
       <?php if (isset($client)): ?>
@@ -67,8 +67,8 @@
           <div class="flex justify-between items-center mb-4">
             <span class="text-lg font-medium text-gray-700">Client</span>
             <div>
-              <a href="/clients/detail" class="bg-blue-600 text-white font-medium py-2 px-4 rounded mr-2 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Nouvelle dette</a>
-              <button class="bg-green-600 text-white font-medium py-2 px-4 rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">Voir dette</button>
+              <a href="/debt/add" class="bg-blue-600 text-white font-medium py-2 px-4 rounded mr-2 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Nouvelle dette</a>
+              <a href="/debt/list/<?= $client ? $client->id : "aucun id selectionner" ?>" class="bg-green-600 text-white font-medium py-2 px-4 rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">Voir dette</a>
             </div>
           </div>
 

@@ -3,12 +3,10 @@
 
 namespace App\Entity;
 
-class DebtEntity extends Entity {
+class PaiementEntity extends Entity {
     private $id;
     private $montant;
-    private $etat;
     private $date;
-    private $id_client;
-    private $montant_verser;
+    private $id_dette;
     private $created_at;
 }

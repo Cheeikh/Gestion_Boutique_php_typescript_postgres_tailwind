@@ -5,7 +5,9 @@ namespace App\Session;
 
 class Session implements SessionInterface {
     public static function start(): void {
-        session_start();
+        if (session_status() == PHP_SESSION_NONE) {
+            session_start();
+        }
     }
     
     public static function close(): void {
@@ -22,5 +24,30 @@ class Session implements SessionInterface {
 
     public static function isset(string $key): bool {
         return isset($_SESSION[$key]);
+    }
+
+    public static function remove(string $key): void {
+        if (isset($_SESSION[$key])) {
+            unset($_SESSION[$key]);
+        }
+    }
+
+    public static function setFlash(string $type, string $message): void {
+        $_SESSION['flash'] = [
+            'type' => $type,
+            'message' => $message
+        ];
+    }
+
+    public static function getFlash() {
+        $flash = $_SESSION['flash'] ?? null;
+        if ($flash) {
+            unset($_SESSION['flash']);
+        }
+        return $flash;
+    }
+
+    public static function hasFlash(): bool {
+        return isset($_SESSION['flash']);
     }
 }

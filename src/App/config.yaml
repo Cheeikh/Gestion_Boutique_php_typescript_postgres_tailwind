@@ -11,6 +11,16 @@ services:
     arguments:
       - '@App\Database\PDOConnection'
 
+  App\Security\SecurityDatabase:
+    class: App\Security\SecurityDatabase
+    arguments:
+      - '@App\Database\MysqlDatabase'
+      - '@App\Authorize\Authorize'
+      - '@App\Files\FileHandler'
+      - '@App\Session\Session'
+
+
+
   App\Database\Database:
     factory: '@App\Database\MysqlDatabase'  # Utiliser MysqlDatabase comme service 'database'
 
@@ -36,6 +46,16 @@ services:
     class: App\Model\DebtModel
     arguments:
       - '@App\Database\MysqlDatabase'
+
+  App\Model\ProduitsModel:
+    class: App\Model\ProduitsModel
+    arguments:
+      - '@App\Database\MysqlDatabase'
+
+  App\Model\PaiementModel:
+    class: App\Model\PaiementModel
+    arguments:
+      - '@App\Database\MysqlDatabase'    
 
   App\Routes\WebRoutes:
     class: App\Routes\WebRoutes  # Définition des routes web
@@ -63,7 +83,24 @@ services:
       - '@App\Model\ClientModel'
       - '@App\Model\UtilisateurModel'
       - '@App\Model\DebtModel'
-      - '@App\Session\Session'  
+      - '@App\Session\Session'
+
+  App\Controller\DebtController:
+    class: App\Controller\DebtController
+    arguments:
+      - '@App\Authorize\Authorize'
+      - '@App\Files\FileHandler'
+      - '@App\Model\DebtModel'  # Assurez-vous que c'est bien DebtModel ici
+      - '@App\Session\Session'
+      - '@App\Model\ClientModel'
+      - '@App\Model\ProduitsModel'
+      - '@App\Model\UtilisateurModel'
+      - '@App\Model\PaiementModel'
+
+  App\Controller\LoginController:
+    class: App\Controller\LoginController
+    arguments:
+    - '@App\Security\SecurityDatabase'
 
   router:
     class: App\Core\Router

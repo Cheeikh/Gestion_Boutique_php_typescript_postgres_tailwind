@@ -10,6 +10,8 @@ use App\Authorize\Authorize;
 use App\Files\FileHandler;
 use Pimple\Container;
 use App\Session\Session;
+use App\Routes\WebRoutes;
+use App\Routes\ApiRoutes;
 
 
 class Router {
@@ -22,7 +24,13 @@ class Router {
         $this->container = $container;
         $this->session = $container['App\Session\Session'];
         $this->loadServices();
-        
+        $this->loadRoutes();
+
+    }
+
+    private function loadRoutes() {
+        $webRoutes = WebRoutes::getRoutes();
+        $apiRoutes = ApiRoutes::getRoutes();
 
         foreach ($webRoutes as $route) {
             $this->addRoute($route[0], $route[1], $route[2], false);
@@ -31,6 +39,8 @@ class Router {
         foreach ($apiRoutes as $route) {
             $this->addRoute($route[0], $route[1], $route[2], true);
         }
+
+        
     }
     
     private function loadServices() {
@@ -74,18 +84,19 @@ class Router {
         $routeReflection = new ReflectionClass(Route::class);
         $route = $routeReflection->newInstance($method, $uri, $action);
         $this->routes[] = $route;
+       
     }
 
     private function matchRoute($requestUri, $routeUri) {
         $requestParts = explode('/', trim($requestUri, '/'));
         $routeParts = explode('/', trim($routeUri, '/'));
-
+    
         if (count($requestParts) !== count($routeParts)) {
             return false;
         }
-
+    
         $params = [];
-
+    
         for ($i = 0; $i < count($routeParts); $i++) {
             if (strpos($routeParts[$i], '#') === 0) {
                 $params[substr($routeParts[$i], 1)] = $requestParts[$i];
@@ -93,7 +104,7 @@ class Router {
                 return false;
             }
         }
-
+    
         return $params;
     }
 
@@ -106,7 +117,10 @@ class Router {
             $this->container['App\Session\Session']
         );
 
+        
+
         if (!$routeInfo) {
+            
             $errorController->notFound();
             return;
         }
@@ -136,19 +150,22 @@ class Router {
         $method = $controllerInfo['reflection']->getMethod($methodName);
         $parameters = $method->getParameters();
         $args = [];
-
+    
         foreach ($parameters as $parameter) {
             $paramName = $parameter->getName();
             if (isset($params[$paramName])) {
                 $args[] = $params[$paramName];
+            } elseif (isset($params[0])) {  // Ajoutez cette condition
+                $args[] = $params[0];
             } elseif ($parameter->isDefaultValueAvailable()) {
                 $args[] = $parameter->getDefaultValue();
             } else {
+                
                 $errorController->notFound();
                 return;
             }
         }
-
+    
         $method->invokeArgs($controller, $args);
     }
 
@@ -164,10 +181,12 @@ class Router {
             if ($route->getMethod() === $request['method']) {
                 $params = $this->matchRoute($request['uri'], $route->getUri());
                 if ($params !== false) {
+                    error_log("Route trouvée : " . $route->getUri());
                     return ['route' => $route, 'params' => $params];
                 }
             }
         }
+        error_log("Aucune route trouvée pour : " . $request['uri']);
         return null;
     }
 

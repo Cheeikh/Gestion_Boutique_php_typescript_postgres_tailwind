@@ -3,9 +3,6 @@
 
 namespace App\Model;
 
-use App\Database\MysqlDatabase;
-use PDO;
-
 class UtilisateurModel extends Model {
     protected $table = 'utilisateurs';
 

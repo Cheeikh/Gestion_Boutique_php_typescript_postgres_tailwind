@@ -19,8 +19,13 @@ abstract class Model {
     }
 
     public function find($id) {
-        $result = $this->query('SELECT * FROM ' . $this->table . ' WHERE id = ?', [$id], get_called_class());
+        $result = $this->query('SELECT * FROM ' . $this->table . ' WHERE id = ?', [$id]);
         return $result ? $result[0] : null;
+    }
+
+    public function findBy($field, $value) {
+        $sql = "SELECT * FROM {$this->table} WHERE {$field} = ?";
+        return $this->query($sql, [$value]);
     }
 
     protected function query($sql, $params = [], $entityClass = null) {

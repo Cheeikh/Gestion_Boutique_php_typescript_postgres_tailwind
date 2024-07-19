@@ -22,7 +22,12 @@ abstract class Controller implements ControllerInterface {
         $this->authorize = $authorize;
         $this->fileHandler = $fileHandler;
         $this->session = $session;
+        $this->session::start();
+/*         $this->session::close();
+ */
     }
+
+    
 
     // Ajout des nouvelles méthodes de gestion des fichiers et de l'utilisateur
     protected function uploadFile(array $file, string $directory): string {

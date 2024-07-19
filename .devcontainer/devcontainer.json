@@ -1,0 +1,17 @@
+{
+    "name": "PHP Development Container",
+    "dockerComposeFile": ["../docker-compose.yml"],
+    "service": "app",
+    "workspaceFolder": "/var/www/html",
+    "extensions": [
+      "felixfbecker.php-intellisense",
+      "bmewburn.vscode-intelephense-client",
+      "ms-azuretools.vscode-docker"
+    ],
+    "settings": {
+      "php.validate.executablePath": "/usr/local/bin/php",
+      "php.suggest.basic": false,
+      "intelephense.files.associations": ["*.php"]
+    }
+  }
+  

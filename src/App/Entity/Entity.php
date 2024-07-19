@@ -8,6 +8,10 @@ abstract class Entity {
     private $reflector;
 
     public function __construct() {
+        $this->initReflector();
+    }
+
+    private function initReflector() {
         $this->reflector = new ReflectionClass($this);
     }
 
@@ -20,6 +24,9 @@ abstract class Entity {
     }
 
     public function toArray() {
+        if (!$this->reflector) {
+            $this->initReflector();
+        }
         $properties = $this->reflector->getProperties();
         $array = [];
 
@@ -32,6 +39,9 @@ abstract class Entity {
     }
 
     private function getPropertyValue($property) {
+        if (!$this->reflector) {
+            $this->initReflector();
+        }
         if ($this->reflector->hasProperty($property)) {
             $prop = $this->reflector->getProperty($property);
             $prop->setAccessible(true);
@@ -41,6 +51,9 @@ abstract class Entity {
     }
 
     private function setPropertyValue($property, $value) {
+        if (!$this->reflector) {
+            $this->initReflector();
+        }
         if ($this->reflector->hasProperty($property)) {
             $prop = $this->reflector->getProperty($property);
             $prop->setAccessible(true);
@@ -50,8 +63,10 @@ abstract class Entity {
         }
     }
 
-    //isset
     public function __isset($property) {
+        if (!$this->reflector) {
+            $this->initReflector();
+        }
         return $this->reflector->hasProperty($property);
     }
 
@@ -62,10 +77,13 @@ abstract class Entity {
 
     public function __unserialize(array $data): void
     {
+        $this->initReflector();
         $properties = $this->reflector->getProperties();
         foreach ($properties as $property) {
             $property->setAccessible(true);
-            $property->setValue($this, $data[$property->getName()]);
+            if (isset($data[$property->getName()])) {
+                $property->setValue($this, $data[$property->getName()]);
+            }
         }
     }
 }

@@ -44,7 +44,6 @@ class App {
     }
 
     public function getModel(string $model) {
-        // Obtenir le modèle à partir du conteneur
         $modelClass = 'App\\Model\\' . ucfirst($model) . 'Model';
         return $this->container[$modelClass]; // Utiliser le conteneur stocké pour obtenir le modèle
     }
